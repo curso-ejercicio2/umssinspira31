@@ -1,14 +1,40 @@
-# HU8 parcial: listado de seis vacantes para revisión
+# HU8 parcial: listado de seis a ocho vacantes para revisión
 
 Entrega para Mateo y QA. **HU8 pendiente de validación completa.** El alcance de
-esta revisión es el listado de seis vacantes que ya existe en desarrollo local,
-con los mismos componentes, filtros, estilos y fixtures. La marca visible es
+esta revisión es el listado que comienza con seis vacantes y muestra ocho al
+actualizar, con los mismos componentes, filtros y estilos. La marca visible es
 «Datos simulados · Demostración». No se usa localStorage como fuente de datos.
 
 Los botones «Ver oferta» conservan `hu8Demo=listado` y abren el detalle ilustrativo
-existente del mismo ID; volver conserva el modo. Se incluyen estos destinos para
-evitar enlaces rotos, sin presentar el detalle ni los demás escenarios como
-terminados. Postulación, guardado y perfil de empresa siguen deshabilitados.
+del mismo ID. Volver conserva el conjunto actualizado, filtros, orden y etiquetas
+de la sesión. Los detalles de las dos incorporaciones admiten también enlaces
+directos y recargas sin depender del historial. Una recarga completa reinicia la
+sesión en memoria; no se persiste en localStorage. Postulación, guardado y perfil
+de empresa siguen deshabilitados. Los demás escenarios no se presentan como
+terminados ni como aprobados por QA.
+
+## Flujo «Listado actualizado»
+
+1. Abrir `/vacantes?hu8Demo=listado`: se muestran las seis ofertas originales.
+2. Pulsar el icono «Actualizar listado»: aparece el mismo skeleton y se bloquean
+   nuevos clics mientras termina la lectura simulada (aproximadamente 250 ms).
+3. Sin cambiar de URL, aparecen ocho ofertas. Con el orden predeterminado «más
+   recientes», las dos primeras tienen la etiqueta «Nueva»:
+   - Diseñador de Experiencia de Usuario — Digital Solutions.
+   - Analista de Soporte Técnico — Andes Tecnología.
+4. Las seis ofertas originales conservan todos sus campos, contenido y requisitos.
+   Cada incorporación tiene su propio ID de empresa, detalle y requisitos. Los
+   títulos y empresas corresponden a lo solicitado; los demás campos son
+   ilustrativos, no una transcripción verificada de Figma.
+5. Abrir cualquiera de las dos ofertas y volver conserva las ocho y las etiquetas.
+   Actualizar otra vez mantiene ocho, sin duplicarlas; como ya se conocían sus IDs,
+   dejan de marcarse como nuevas en esa consulta, según la lógica previa de sesión.
+
+Los filtros y el selector de orden mantienen su comportamiento: pueden reducir
+los resultados o cambiar el orden visible. Cancelar una actualización antes de
+completarse no consume la transición. No se necesita una segunda página ni un
+selector visible. La fuente real y los escenarios locales de vacío/error siguen
+separados de esta demostración.
 
 ## Configuración de Vercel Preview (sin desplegar todavía)
 
@@ -48,9 +74,10 @@ npm run build
 ```
 
 La suite Preview comprueba la configuración de build, bloqueo en Production,
-opt-in ausente o inválido, seis fixtures, seis destinos de detalle, parámetros de
-regreso y separación de API, incluidas respuestas vacías y errores reales
-simulados mediante `fetch` de prueba. No consulta ni modifica servicios reales.
+opt-in ausente o inválido, transición seis a ocho en desarrollo y Preview,
+conservación de originales, etiquetas, filtros, cancelación, navegación, detalles
+por ID y separación de API. Incluye respuestas vacías y errores reales simulados
+mediante `fetch` de prueba. No consulta ni modifica servicios reales.
 
 Para una comprobación de navegador del build Preview, usar un puerto libre y
 compilar localmente con las tres variables de Vercel anteriores, dentro de un
@@ -60,7 +87,21 @@ La API real y su integración siguen pendientes. No se deben usar sus resultados
 como evidencia de aceptación de HU8. Su búsqueda puede crear un índice de
 Elasticsearch ausente; esta tarea no necesita ejecutar esa consulta real.
 
-## Resultado de esta preparación
+## Verificación del flujo seis a ocho (27 de octubre de 2026)
+
+- Pasaron 32 pruebas HU8: 10 de la suite Preview/actualización, 3 de sesión, 14 de
+  consultas y 5 de timeout. Se ejecutaron directamente con Node para no necesitar
+  subprocesos del test runner en el sandbox de Windows.
+- TypeScript (`tsc --noEmit --incremental false`) y ESLint de los dos módulos de
+  datos y del test modificado pasaron. No se modificaron componentes ni CSS.
+- La comprobación visual nueva quedó pendiente: el servidor de desarrollo arrancó
+  y luego se detuvo por el aviso de seguridad de Next.js ya documentado abajo.
+  No se repitió ese intento ni el build de Production, ni se actualizaron
+  dependencias o se desactivaron protecciones.
+- La comprobación anterior en Chrome cubría seis ofertas; no se debe presentar
+  como una comprobación visual del nuevo flujo de ocho.
+
+## Resultados anteriores a la ampliación
 
 - 28 pruebas de HU8 y 8 pruebas existentes de HU1/HU2 pasaron. La suite nueva de
   Preview (6 de esas 28) se repitió correctamente después del ajuste de su formato

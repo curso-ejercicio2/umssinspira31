@@ -8,15 +8,21 @@ import { resolveHu8DemoScenario } from '../demo-mode';
  * Other fields are illustrative fixtures, not records from Supabase/Elasticsearch.
  */
 export function getHu8DevelopmentFixtures(includeNewVacancies = false): Hu8VacancyDetail[] {
-  if (resolveHu8DemoScenario(includeNewVacancies ? 'actualizado' : 'listado') === null) {
+  if (resolveHu8DemoScenario('listado') === null) {
     throw new Error('Los fixtures de HU8 no están habilitados para este entorno y escenario.');
   }
 
   const techSolutions = '80000000-0000-4000-8000-000000000101';
   const jalasoft = '80000000-0000-4000-8000-000000000102';
+  const companyIds: Record<string, string> = {
+    'TechSolutions S.A.': techSolutions,
+    Jalasoft: jalasoft,
+    'Digital Solutions': '80000000-0000-4000-8000-000000000103',
+    'Andes Tecnología': '80000000-0000-4000-8000-000000000104',
+  };
   const fixture = (index: number, fields: Pick<Vacancy, 'titulo' | 'empresa' | 'area' | 'modalidad' | 'descripcion' | 'ubicacion'>, requirements: string[], detailContent: VacancyDetailContent): Hu8VacancyDetail => ({
     id: `80000000-0000-4000-8000-00000000000${index}`,
-    idEmpresa: fields.empresa === 'Jalasoft' ? jalasoft : techSolutions,
+    idEmpresa: companyIds[fields.empresa],
     ...fields,
     estado: 'Disponible',
     fechaCreacion: `2026-10-${17 - index}T12:00:00.000Z`,
@@ -117,34 +123,34 @@ export function getHu8DevelopmentFixtures(includeNewVacancies = false): Hu8Vacan
   ];
 
   if (includeNewVacancies) {
-    // Additional illustrative vacancies only for the explicit updated scenario.
-    // Their names/content are not claimed to be transcribed from Figma.
+    // Titles and companies match the requested updated list. The remaining
+    // fields and technical requirements are illustrative, isolated demo data.
     vacancies.push({
       ...fixture(7, {
-        titulo: 'Desarrollador Full Stack', empresa: 'Jalasoft',
-        area: 'Desarrollo de software', modalidad: 'Híbrido', ubicacion: 'Cochabamba',
-        descripcion: 'Desarrolla interfaces y servicios para integrar aplicaciones web de principio a fin.',
-      }, ['JavaScript', 'React', 'Node.js', 'PostgreSQL'], {
-        locationDetail: 'Cochabamba, Bolivia', experience: 'Intermedio', schedule: 'Tiempo completo', closingDate: '2026-11-02T12:00:00.000Z',
-        about: ['Colaborarás con el equipo de producto en la construcción de aplicaciones web y sus servicios de datos.'],
-        responsibilities: ['Implementar interfaces con React.', 'Desarrollar servicios con Node.js y PostgreSQL.', 'Documentar y probar las integraciones de la aplicación.'],
-        desirable: 'Conocimientos de integración continua y pruebas de aplicaciones web.',
-        benefits: ['Modalidad híbrida en Cochabamba.', 'Colaboración con equipos de desarrollo de interfaces y servicios.'],
-        companyDescription: 'Empresa de tecnología y desarrollo de software. Información ilustrativa para esta demostración.',
+        titulo: 'Diseñador de Experiencia de Usuario', empresa: 'Digital Solutions',
+        area: 'Diseño de producto', modalidad: 'Remoto', ubicacion: 'La Paz',
+        descripcion: 'Investiga necesidades de usuarios y diseña experiencias accesibles para productos digitales.',
+      }, ['Figma', 'Prototipado', 'Investigación de usuarios', 'Accesibilidad'], {
+        locationDetail: 'La Paz, Bolivia', experience: 'Junior', schedule: 'Tiempo completo', closingDate: '2026-11-02T12:00:00.000Z',
+        about: ['En Digital Solutions participarás en la investigación y el diseño de experiencias de uso para aplicaciones web.'],
+        responsibilities: ['Investigar necesidades de usuarios y documentar hallazgos.', 'Crear flujos de navegación y prototipos en Figma.', 'Evaluar accesibilidad y realizar pruebas de usabilidad.'],
+        desirable: 'Conocimientos de sistemas de diseño y pruebas de usabilidad.',
+        benefits: ['Trabajo remoto desde Bolivia.', 'Colaboración con el equipo de diseño de Digital Solutions.'],
+        companyDescription: 'Digital Solutions desarrolla productos digitales centrados en sus usuarios. Información ilustrativa para esta demostración.',
       }),
       fechaCreacion: '2026-10-19T14:00:00.000Z',
     }, {
       ...fixture(8, {
-        titulo: 'Diseñador UX/UI', empresa: 'TechSolutions S.A.',
-        area: 'Diseño de producto', modalidad: 'Remoto', ubicacion: 'La Paz',
-        descripcion: 'Diseña experiencias e interfaces accesibles para productos digitales.',
-      }, ['Figma', 'Prototipado', 'Investigación de usuarios', 'Accesibilidad'], {
-        locationDetail: 'La Paz, Bolivia', experience: 'Junior', schedule: 'Tiempo completo', closingDate: '2026-11-03T12:00:00.000Z',
-        about: ['Participarás en el diseño de flujos y prototipos para mejorar la experiencia de uso de aplicaciones web.'],
-        responsibilities: ['Crear flujos de navegación y prototipos en Figma.', 'Documentar componentes y criterios de accesibilidad.', 'Colaborar con desarrollo para revisar las interfaces.'],
-        desirable: 'Conocimientos de pruebas de usabilidad.',
-        benefits: ['Trabajo remoto desde Bolivia.', 'Colaboración con el equipo de producto y desarrollo.'],
-        companyDescription: 'Somos una empresa de tecnología enfocada en desarrollar soluciones de software.',
+        titulo: 'Analista de Soporte Técnico', empresa: 'Andes Tecnología',
+        area: 'Soporte técnico', modalidad: 'Presencial', ubicacion: 'Cochabamba',
+        descripcion: 'Resuelve incidencias de equipos, sistemas operativos y conectividad para apoyar a los usuarios.',
+      }, ['Diagnóstico de hardware y software', 'Windows y Linux', 'Redes TCP/IP', 'Gestión de incidencias'], {
+        locationDetail: 'Cochabamba, Bolivia', experience: 'Junior', schedule: 'Tiempo completo', closingDate: '2026-11-03T12:00:00.000Z',
+        about: ['En Andes Tecnología brindarás asistencia técnica a usuarios y darás seguimiento a incidentes de equipos y redes.'],
+        responsibilities: ['Diagnosticar problemas de hardware y software.', 'Configurar sistemas operativos y verificar conectividad TCP/IP.', 'Registrar incidentes y documentar su resolución.'],
+        desirable: 'Conocimientos de herramientas de asistencia remota y mesas de ayuda.',
+        benefits: ['Trabajo presencial en Cochabamba.', 'Acompañamiento del equipo de soporte de Andes Tecnología.'],
+        companyDescription: 'Andes Tecnología brinda servicios de soporte y mantenimiento informático. Información ilustrativa para esta demostración.',
       }),
       fechaCreacion: '2026-10-19T13:00:00.000Z',
     });

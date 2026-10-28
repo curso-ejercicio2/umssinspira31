@@ -25,26 +25,10 @@ function demoDelay(scenario: Hu8DemoScenario, signal?: AbortSignal): Promise<voi
   });
 }
 
-function scenarioVacancies(scenario: Hu8DemoScenario) {
-  const vacancies = getHu8DevelopmentFixtures(scenario === 'actualizado');
+function scenarioVacancies(scenario: Hu8DemoScenario, includeNewVacancies = scenario === 'actualizado') {
+  const vacancies = getHu8DevelopmentFixtures(includeNewVacancies);
   if (scenario === 'sin-vacantes') return [];
   if (scenario === 'sin-requisitos') return vacancies.map((vacancy) => ({ ...vacancy, requisitos: [] }));
-  if (scenario === 'actualizado') {
-    // An explicit second visual dataset, never a mutation of a real vacancy.
-    vacancies[0] = {
-      ...vacancies[0],
-      modalidad: 'Híbrido',
-      descripcion: 'Crea interfaces web accesibles con React y TypeScript y colabora con el equipo de producto en modalidad híbrida.',
-      requisitos: [...vacancies[0].requisitos, { id: 'hu8-demo-updated', nombre: 'Pruebas de interfaces' }],
-      detailContent: {
-        ...vacancies[0].detailContent,
-        benefits: [
-          'Trabajo híbrido en Cochabamba y jornada de tiempo completo.',
-          ...(vacancies[0].detailContent?.benefits?.slice(1) ?? []),
-        ],
-      },
-    };
-  }
   return vacancies;
 }
 
@@ -52,6 +36,15 @@ export async function listDemoVacancies(scenario: Hu8DemoScenario, signal?: Abor
   assertDemoAllowed(scenario);
   await demoDelay(scenario, signal);
   signal?.throwIfAborted();
+  if (scenario === 'listado') {
+    // Commit the transition only after a completed explicit refresh. Replayed
+    // effects and returning from a detail reuse the session without advancing it.
+    if (read && read.action !== 'initial' && read.sequence > read.journey.appliedRead) {
+      read.journey.phase = 'actualizado';
+      read.journey.appliedRead = read.sequence;
+    }
+    return scenarioVacancies(scenario, read?.journey.phase === 'actualizado');
+  }
   if (scenario === 'recorrido') {
     if (!read) throw new Error('El recorrido necesita una sesión de consulta.');
     // Only completed user actions advance the story. Replayed effects, route
@@ -76,7 +69,10 @@ export async function getDemoVacancy(id: string, scenario: Hu8DemoScenario, sign
   signal?.throwIfAborted();
   if (scenario === 'error') throw new VacancyApiError('Error simulado de consulta de HU8.', 503);
   const effectiveScenario = scenario === 'recorrido' ? journey?.phase === 'actualizado' ? 'actualizado' : 'listado' : scenario;
-  const vacancy = scenario === 'inexistente' ? undefined : scenarioVacancies(effectiveScenario).find((item) => item.id === id);
+  // Both added offers remain addressable by ID, including a direct link or a
+  // detail reload, without changing the listing's phase or using browser storage.
+  const includeNewVacancies = scenario === 'listado' || effectiveScenario === 'actualizado';
+  const vacancy = scenario === 'inexistente' ? undefined : scenarioVacancies(effectiveScenario, includeNewVacancies).find((item) => item.id === id);
   if (!vacancy) throw new VacancyApiError('La vacante no existe.', 404);
   return vacancy;
 }
